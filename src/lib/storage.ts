@@ -32,7 +32,8 @@ export class StorageService {
             id: crypto.randomUUID(),
             status: "TODO",
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            order: tasks.length + 1
         }
         tasks.push(newTask)
         this.saveTasks(tasks)

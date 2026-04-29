@@ -13,6 +13,7 @@ export interface Task {
     tags: string[];
     estimatedHours: number;
     actualHours?: number;
+    order: number
 }
 export interface CreateTaskDTO {
     title: string;
