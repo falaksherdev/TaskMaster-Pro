@@ -73,4 +73,22 @@ export class StorageService {
         this.saveTasks(updatedTasks);
         return updatedTasks;
     }
+    static reorderTasks(activeId: string, overId: string): Task[] {
+        const tasks = this.getTasks()
+        const oldIndex = tasks.findIndex(t => t.id === activeId)
+        const newIndex = tasks.findIndex(t => t.id === overId)
+
+        if (oldIndex === -1 || newIndex === -1) return tasks
+
+        const [movedTask] = tasks.splice(oldIndex, 1)
+        tasks.splice(newIndex, 0, movedTask)
+
+        // Update order property
+        tasks.forEach((task, idx) => {
+            task.order = idx + 1
+        })
+
+        this.saveTasks(tasks)
+        return tasks
+    }
 }

@@ -7,7 +7,7 @@ export const taskKeys = {
     lists: () => [...taskKeys.all, 'list'] as const,
 }
 export const useTasks = () => {
-    return useQuery({
+    return useQuery<Task[]>({
         queryKey: taskKeys.lists(),
         queryFn: () => {
             return new Promise((resolve) => {
@@ -86,7 +86,7 @@ export const useUpdateTask = () => {
     })
 }
 
-// DELETE task
+
 export const useDeleteTask = () => {
     const queryClient = useQueryClient()
 
@@ -109,6 +109,51 @@ export const useDeleteTask = () => {
         onError: (err, deletedId, context) => {
             queryClient.setQueryData(taskKeys.lists(), context?.previousTasks)
             alert('Failed to delete task')
+        },
+
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: taskKeys.lists() })
+        }
+    })
+}
+export const useReorderTasks = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async ({ activeId, overId }: { activeId: string; overId: string }) => {
+            return StorageService.reorderTasks(activeId, overId)
+        },
+
+        onMutate: async ({ activeId, overId }) => {
+            await queryClient.cancelQueries({ queryKey: taskKeys.lists() })
+
+            const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.lists())
+
+            // Optimistically reorder in cache
+            queryClient.setQueryData<Task[]>(taskKeys.lists(), (old = []) => {
+                const oldIndex = old.findIndex(t => t.id === activeId)
+                const newIndex = old.findIndex(t => t.id === overId)
+
+                if (oldIndex === -1 || newIndex === -1) return old
+
+                const newTasks = [...old]
+                const [movedTask] = newTasks.splice(oldIndex, 1)
+                newTasks.splice(newIndex, 0, movedTask)
+
+                // Update order property
+                newTasks.forEach((task, idx) => {
+                    task.order = idx + 1
+                })
+
+                return newTasks
+            })
+
+            return { previousTasks }
+        },
+
+        onError: (err, variables, context) => {
+            queryClient.setQueryData(taskKeys.lists(), context?.previousTasks)
+            alert('Failed to reorder tasks')
         },
 
         onSuccess: () => {
