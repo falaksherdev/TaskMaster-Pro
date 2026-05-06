@@ -6,6 +6,7 @@ import { RootState } from "../store/store";
 import { closeModal } from "../store/features/uiSlice";
 import { useCreateTask, useUpdateTask } from "../hooks/useTasks";
 import { TaskPriority } from "../types";
+import { X, Plus, Tag, Calendar, Clock, AlertCircle } from "lucide-react";
 
 export function TaskModal() {
   const dispatch = useDispatch();
@@ -80,16 +81,36 @@ export function TaskModal() {
 
   if (!isModalOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">
-          {modalType === "CREATE" ? "➕ Add New Task" : "✏️ Edit Task"}
-        </h2>
+  const priorityColors = {
+    LOW: "text-blue-600 bg-blue-50 border-blue-200",
+    MEDIUM: "text-orange-600 bg-orange-50 border-orange-200",
+    HIGH: "text-red-600 bg-red-50 border-red-200",
+    URGENT: "text-purple-600 bg-purple-50 border-purple-200",
+  };
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            {modalType === "CREATE" ? "✨ Create New Task" : "📝 Edit Task"}
+          </h2>
+          <button
+            onClick={() => dispatch(closeModal())}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          </button>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 space-y-5 overflow-y-auto max-h-[calc(90vh-80px)]"
+        >
           <div>
-            <label className="block text-sm font-medium mb-1">Title *</label>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Title <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               required
@@ -97,13 +118,13 @@ export function TaskModal() {
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter task title"
+              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:text-white"
+              placeholder="e.g., Build amazing project"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Description
             </label>
             <textarea
@@ -112,14 +133,16 @@ export function TaskModal() {
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter task description"
+              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:text-white resize-none"
+              placeholder="Describe your task..."
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Priority</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Priority
+              </label>
               <select
                 value={formData.priority}
                 onChange={(e) =>
@@ -128,105 +151,144 @@ export function TaskModal() {
                     priority: e.target.value as TaskPriority,
                   })
                 }
-                className="w-full px-3 py-2 border rounded-md"
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer ${
+                  priorityColors[formData.priority]
+                }`}
               >
-                <option value="LOW">🟢 Low</option>
-                <option value="MEDIUM">🟠 Medium</option>
-                <option value="HIGH">🔴 High</option>
-                <option value="URGENT">⚡ Urgent</option>
+                <option value="LOW" className="text-blue-600">
+                  🟢 Low
+                </option>
+                <option value="MEDIUM" className="text-orange-600">
+                  🟠 Medium
+                </option>
+                <option value="HIGH" className="text-red-600">
+                  🔴 High
+                </option>
+                <option value="URGENT" className="text-purple-600">
+                  ⚡ Urgent
+                </option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Due Date</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Due Date
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, dueDate: e.target.value })
+                  }
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:text-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Estimated Hours
+            </label>
+            <div className="relative">
+              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
-                type="date"
-                value={formData.dueDate}
+                type="number"
+                min="0.5"
+                step="0.5"
+                value={formData.estimatedHours}
                 onChange={(e) =>
-                  setFormData({ ...formData, dueDate: e.target.value })
+                  setFormData({
+                    ...formData,
+                    estimatedHours: parseFloat(e.target.value),
+                  })
                 }
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:text-white"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Estimated Hours
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Tags
             </label>
-            <input
-              type="number"
-              min="0.5"
-              step="0.5"
-              value={formData.estimatedHours}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  estimatedHours: parseFloat(e.target.value),
-                })
-              }
-              className="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Tags</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), addTag())
-                }
-                placeholder="Add tag"
-                className="flex-1 px-3 py-2 border rounded-md"
-              />
+            <div className="flex gap-2 mb-3">
+              <div className="relative flex-1">
+                <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addTag())
+                  }
+                  placeholder="Add a tag..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 dark:text-white"
+                />
+              </div>
               <button
                 type="button"
                 onClick={addTag}
-                className="px-4 py-2 bg-gray-500 text-white rounded-md"
+                className="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-1 shadow-sm"
               >
+                <Plus className="w-4 h-4" />
                 Add
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-2 py-1 bg-gray-100 rounded-md text-sm flex items-center gap-1"
-                >
-                  #{tag}
-                  <button
-                    type="button"
-                    onClick={() => removeTag(tag)}
-                    className="text-red-500 ml-1"
+
+            {formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                {formData.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1.5 bg-white dark:bg-gray-800 rounded-lg text-sm flex items-center gap-2 shadow-sm border border-gray-200 dark:border-gray-700"
                   >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
+                    <Tag className="w-3 h-3 text-blue-500" />#{tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      className="text-red-500 hover:text-red-700 transition-colors ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
             <button
               type="button"
               onClick={() => dispatch(closeModal())}
-              className="px-4 py-2 border rounded-md hover:bg-gray-50"
+              className="px-5 py-2.5 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={createTask.isPending || updateTask.isPending}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {createTask.isPending || updateTask.isPending
-                ? "Saving..."
-                : modalType === "CREATE"
-                  ? "Create"
-                  : "Update"}
+              {createTask.isPending || updateTask.isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  {modalType === "CREATE" ? (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Create Task
+                    </>
+                  ) : (
+                    "Update Task"
+                  )}
+                </>
+              )}
             </button>
           </div>
         </form>

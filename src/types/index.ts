@@ -40,7 +40,7 @@ export interface FilterState {
     status: TaskStatus | 'ALL';
     priority: TaskPriority | 'ALL';
     search: string;
-    sortBy: 'createdAt' | 'dueDate' | 'priority';
+    sortBy: 'createdAt' | 'dueDate' | 'priority' | 'manual';
     sortOrder: 'asc' | 'desc'
 }
 

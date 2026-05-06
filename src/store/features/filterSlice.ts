@@ -6,7 +6,7 @@ const initialState: FilterState = {
     status: "ALL",
     priority: "ALL",
     search: "",
-    sortBy: "createdAt",
+    sortBy: "manual",
     sortOrder: "desc"
 }
 

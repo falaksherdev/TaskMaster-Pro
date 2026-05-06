@@ -21,6 +21,7 @@ export const useTasks = () => {
 
 export const useCreateTask = () => {
     const queryClient = useQueryClient()
+    console.log({ queryClient })
 
     return useMutation({
         mutationFn: async (newTask: CreateTaskDTO) => StorageService.createTask(newTask),

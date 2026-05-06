@@ -35,7 +35,6 @@ export function TaskList() {
     (state: RootState) => state.filters,
   );
 
-  // ✅ FIX: Default value empty array
   const { data: tasks = [], isLoading, error, refetch } = useTasks();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -48,7 +47,6 @@ export function TaskList() {
     }),
   );
 
-  // Filter and sort tasks
   const filteredTasks = useMemo(() => {
     let filtered = [...tasks];
 
@@ -66,26 +64,30 @@ export function TaskList() {
       );
     }
 
-    const priorityOrder = { URGENT: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+    if (sortBy !== "manual") {
+      const priorityOrder = { URGENT: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
 
-    filtered.sort((a, b) => {
-      if (sortBy === "createdAt") {
-        return sortOrder === "asc"
-          ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-      if (sortBy === "dueDate") {
-        return sortOrder === "asc"
-          ? new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-          : new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
-      }
-      if (sortBy === "priority") {
-        return sortOrder === "asc"
-          ? priorityOrder[a.priority] - priorityOrder[b.priority]
-          : priorityOrder[b.priority] - priorityOrder[a.priority];
-      }
-      return 0;
-    });
+      filtered.sort((a, b) => {
+        if (sortBy === "createdAt") {
+          return sortOrder === "asc"
+            ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        if (sortBy === "dueDate") {
+          return sortOrder === "asc"
+            ? new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+            : new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+        }
+        if (sortBy === "priority") {
+          return sortOrder === "asc"
+            ? priorityOrder[a.priority] - priorityOrder[b.priority]
+            : priorityOrder[b.priority] - priorityOrder[a.priority];
+        }
+        return 0;
+      });
+    } else {
+      filtered.sort((a, b) => (a.order || 0) - (b.order || 0));
+    }
 
     return filtered;
   }, [tasks, status, priority, search, sortBy, sortOrder]);
